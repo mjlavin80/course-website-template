@@ -15,7 +15,6 @@ app = Flask(__name__)
 app.config.from_pyfile('config.py')
 bcrypt = Bcrypt(app)
 
-
 #ends session so there's no mysql timeout
 @app.teardown_appcontext
 def shutdown_session(exception=None):
@@ -27,7 +26,7 @@ class MyAdminIndexView(AdminIndexView):
         if not current_user.is_authenticated:
             return redirect('login')
         else:
-            return render_template('admin/index.html')
+            return self.render('admin/index.html')
 
 # Create menu links classes with reloaded accessible
 class AuthenticatedMenuLink(MenuLink):
