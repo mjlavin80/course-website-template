@@ -1,13 +1,23 @@
 from application import db
 
 class User(db.Model):
+    __tablename__ = 'users'
+
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), index=True, unique=True)
-    is_admin = db.Column(db.Boolean, default=False)
-    profile_image = db.Column(db.String(128), index=True, unique=False)
-    display_name = db.Column(db.String(50), index=True, unique=True)
-    email = db.Column(db.String(50), index=True, unique=True)
-    password = db.Column(db.String(50))
+    username = db.Column(db.String(200))
+    github_access_token = db.Column(db.String(200))
+
+    def __init__(self, github_access_token):
+        self.github_access_token = github_access_token
+
+class AdminUser(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(250), index=True, unique=True)
+    is_admin = db.Column(db.Boolean, default=True)
+    profile_image = db.Column(db.String(250), index=True, unique=False)
+    display_name = db.Column(db.String(250), index=True, unique=True)
+    email = db.Column(db.String(250), index=True, unique=True)
+    password = db.Column(db.String(500))
     authenticated = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
@@ -34,6 +44,7 @@ class Day(db.Model):
     name = db.Column(db.String(50))
     assignments = db.relationship('Assignment', backref='day', lazy='joined')
     readings = db.relationship('Reading', backref='day', lazy='joined')
+    activities = db.relationship('Activity', backref='day', lazy='joined')
     week_id = db.Column(db.Integer, db.ForeignKey('week.id'))
 
     def __repr__(self):
@@ -55,6 +66,7 @@ class Assignment(db.Model):
     description = db.Column(db.String(9999))
     link_title = db.Column(db.String(128))
     day_id = db.Column(db.Integer, db.ForeignKey('day.id'))
+    text_date = db.Column(db.String(128))
     def __repr__(self):
         return '<Assignment %r %r>' % (self.id, self.title)
 
@@ -66,10 +78,11 @@ class Reading(db.Model):
     publisher = db.Column(db.String(50))
     pubdate = db.Column(db.String(50))
     pubplace = db.Column(db.String(50))
-    link = db.Column(db.String(50))
+    link = db.Column(db.String(128))
     article_title = db.Column(db.String(128))
     book_title = db.Column(db.String(128))
     day_id = db.Column(db.Integer, db.ForeignKey('day.id'))
+
     def __repr__(self):
         return '<Reading %r %r >' % (self.last_name, self.article_title)
 
@@ -79,8 +92,26 @@ class Basics(db.Model):
     office = db.Column(db.String(128))
     office_hours = db.Column(db.String(128))
     email = db.Column(db.String(128))
+    zotero = db.Column(db.String(500))
+    github = db.Column(db.String(500))
+    hypoth = db.Column(db.String(500))
     course_name = db.Column(db.String(512))
-    course_description =  db.Column(db.String(9999))
+    course_description = db.Column(db.String(9999))
     semester_year = db.Column(db.String(128))
     department = db.Column(db.String(128))
     institution = db.Column(db.String(128))
+
+class Policy(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(128))
+    description = db.Column(db.String(9999))
+
+class Activity(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order = db.Column(db.String(100))
+    link = db.Column(db.String(500))
+    description = db.Column(db.String(9999))
+    day_id = db.Column(db.Integer, db.ForeignKey('day.id'))
+
+    def __repr__(self):
+        return '<Activity %r %r >' % (self.link, self.description)

@@ -1,7 +1,6 @@
 .navbar-toggle .icon-bar {
 background-color: black;
 }
-
 /* Sticky footer styles
 -------------------------------------------------- */
 html {
@@ -10,8 +9,9 @@ html {
 }
 body {
   /* Margin bottom by footer height */
-  margin-bottom: 60px;
+  margin-bottom: 70px;
 }
+
 .footer {
   position: absolute;
   bottom: 0;
@@ -31,10 +31,6 @@ body {
     background-color: #e38d13;
     border: 1px solid #e38d13;
     color: white;
-}
-.book-title, .article-title {
-    color: red;
-
 }
 .book-title {
     font-style: italic;
