@@ -137,6 +137,90 @@ def calendar():
     weeks = Week.query.order_by(Week.week_number).all()
     return render_template("calendar.html", weeks=weeks)
 
+@app.route("/planner")
+@include_site_data
+def planner():
+    #move all this to application folder?
+    import datetime
+
+    t = datetime.date.today()
+    t = datetime.datetime.strptime("Thursday, January 5, 2017", "%A, %B %d, %Y").date()
+
+    weeks = Week.query.order_by(Week.week_number).all()
+    last_due = []
+    next_due = []
+    days_before = []
+    days_after = []
+    for week in weeks:
+        for day in week.days:
+            try:
+                dayname = datetime.datetime.strptime(day.name, "%A, %B %d, %Y").date()
+            except:
+                dayname = t
+            if dayname >= t:
+                days_after.append(day)
+            if dayname < t:
+                days_before.append(day)
+
+    def find_assignment(day_list, mode='before'):
+        assign = 0
+        due_days = []
+        for day in day_list:
+            if mode == 'before' and assign == 0:
+                if len(day.assignments) > 0:
+                    due_days.append(day)
+                    #if found, append and change assign var to a 1
+                    assign += 1
+            elif mode != 'before':
+                if len(day.assignments) > 0:
+                    due_days.append(day)
+        if mode == 'before':
+            due_days = due_days[-1:]
+        return due_days
+
+    last_due = find_assignment(days_before)
+    next_due = find_assignment(days_after, mode='after')
+    print(next_due)
+    try:
+        _next_three = days_after[0:3]
+    except:
+        _next_three = []
+        fake = Day()
+        fake.name = "No data to display"
+        _next_three.append(fake)
+    try:
+        _last = days_before[-1]
+    except:
+        _last = Day()
+        _last.name = "No data to display"
+    try:
+        last_due_date = last_due[0]
+        days_passed = t - datetime.datetime.strptime(last_due_date.name, "%A, %B %d, %Y").date()
+        days_ago = days_passed.days
+    except:
+        last_due_date = Day()
+        last_due_date.name = "No data to display"
+        fake_assignment = Assignment()
+        fake_assignment.link_title = "all"
+        fake_assignment.title = "No data to display"
+        last_due_date.assignments.append(fake_assignment)
+        days_ago = 0
+    try:
+        next_due_date = next_due[0]
+        days_to = datetime.datetime.strptime(next_due_date.name, "%A, %B %d, %Y").date() - t
+        days_to_next = days_to.days
+    except:
+        next_due_date = Day()
+        next_due_date.name = "No data to display"
+        fake_assignment = Assignment()
+        fake_assignment.link_title = "all"
+        fake_assignment.title = "No data to display"
+        next_due_date.assignments.append(fake_assignment)
+        days_to_next = 0
+
+    today = t.strftime("%A, %B %d, %Y").replace(" 0", " ")
+    return render_template("planner.html", last=_last, next_three=_next_three, next_due_date=next_due_date, last_due_date=last_due_date, days_ago=days_ago, days_to_next=days_to_next, today=today)
+
 @app.route("/assignments/<this_assignment>")
 @app.route("/assignments")
 @include_site_data
@@ -257,7 +341,7 @@ def status(message=""):
     login_user(user, force=True)
     message="in"
     return render_template('status.html', message=message)
-    
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
